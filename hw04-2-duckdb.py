@@ -38,9 +38,27 @@ if __name__ == "__main__":
   # yearly_fatalities_duckdb.svg
   
   yearly_count_query = """
-  SELECT * FROM 's3://dsan6000-data/acled_events.parquet'
-  LIMIT 5;
+  SELECT year, SUM(fatalities) AS total_fatalities
+  FROM 's3://dsan6000-data/acled_events.parquet'
+  WHERE year >= 2018 AND year <= 2024
+  GROUP BY year
+  ORDER BY year;
   """
+
+  yearly_df = con.execute(yearly_count_query).df()
+
+  sns.lineplot(
+      data=yearly_df,
+      x="year",
+      y="total_fatalities",
+      marker="o"
+  )
+
+  plt.title("ACLED: Yearly Fatality Counts (DuckDB)")
+  plt.tight_layout()
+
+  plt.savefig("images/yearly_fatalities_duckdb.svg")
+  plt.close()
   result_df = con.execute(yearly_count_query).df()
   print(result_df)
   
